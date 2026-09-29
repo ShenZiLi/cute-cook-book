@@ -45,3 +45,6 @@ Thumbs.db
 .eslintcache
 .cache/
 .temp/
+
+# 本地工具数据（工作区记忆、会话产物）
+.workbuddy/
