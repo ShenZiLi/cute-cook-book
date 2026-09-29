@@ -19,3 +19,10 @@ If you're using Codex or another agent-capable tool, additional project-scoped h
 Managed by Trellis. Edits outside this block are preserved; edits inside may be overwritten by a future `trellis update`.
 
 <!-- TRELLIS:END -->
+
+## Local Git commits
+
+- After each completed, verified change, create a local Git commit for that logical change. Do not leave completed work uncommitted.
+- Inspect the staged files before committing and include only files belonging to that change. Preserve unrelated or user-owned edits.
+- If the directory is not yet a Git repository, initialize one and save the existing project as a baseline before making new feature changes.
+- Do not push or publish unless the user separately asks.
