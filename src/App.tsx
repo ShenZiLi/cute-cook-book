@@ -1,4 +1,4 @@
-import { useEffect, useReducer, useRef, useState } from 'react'
+import { Fragment, useEffect, useReducer, useRef, useState } from 'react'
 import { Link, Navigate, Route, Routes, useNavigate } from 'react-router-dom'
 import { AnimatedScene, Scene } from './Scene'
 import { deletePhoto, getPhoto, savePhoto } from './photo'
@@ -23,13 +23,15 @@ function Brand() { return <div className="brand"><span className="brand-mark">�
 
 function Home() {
   return <main className="page home-page">
+    <div className="page-scroll">
     <header className="home-header"><Brand/><span className="header-note">把每一步，都做得心里有数</span></header>
     <section className="home-intro"><div className="eyebrow">今日手绘菜谱 · 01 / 01</div><h1>番茄炒蛋<span className="title-star">✳</span></h1><p>先看清全程，再安心下锅。<br/>每一步都有动作、用量与火候提醒。</p></section>
-    <div className="hero-art"><Scene step={steps[7]} compact/><div className="hero-badge">酸甜软嫩<br/><b>两人份</b></div></div>
+    <div className="hero-art"><Scene step={steps[7]} compact fit="cover"/><div className="hero-badge">酸甜软嫩<br/><b>两人份</b></div></div>
     <section className="home-meta" aria-label="菜谱信息"><span><b>02</b><small>人份</small></span><span><b>约 15</b><small>分钟 · 参考</small></span><span><b>08</b><small>个步骤</small></span></section>
     <section className="home-route"><div className="section-heading"><div><span className="eyebrow">THE LITTLE ROUTE</span><h2>从准备到开饭</h2></div><span className="hand-note">一眼看全程 ↘</span></div><div className="route-grid">{stages.map(stage => <div className="route-item" key={stage.id}><span className="route-number">{stage.icon}</span><div><strong>{stage.label}</strong><small>{stage.note}</small></div></div>)}</div></section>
     <Link className="primary-button home-cta" to="/recipe">打开这道菜 <IconArrow/></Link>
     <p className="footnote">用量与时间为原型参考，正式使用前仍需试做校准。</p>
+    </div>
   </main>
 }
 
@@ -136,22 +138,26 @@ function RecipePage() {
     const target = steps.find(item => item.id === state.activeStepId && item.stage === stage) ?? steps.find(item => item.stage === stage)
     if (target) dispatch({ type: 'inspect', stepId: target.id })
   }
+  const cookerDemo = state.stage === 'cook' && view === 'demo'
+  const primaryAction = cookerDemo ? null : state.stage === 'ingredients'
+    ? { kind: 'prep' as const, label: <>食材备齐，开始备菜 <IconArrow/></> }
+    : { kind: 'advance' as const, label: isInspecting ? '返回当前跟做步骤' : step.id === 8 ? '完成这道菜 ✓' : <>完成本步，下一步 <IconArrow/></> }
   return <main className="page recipe-page">
     <header className="recipe-header"><button className="back-button" onClick={() => navigate('/')} aria-label="返回首页"><IconArrow left/></button><div><small>小厨手账 / 两人份</small><h1>番茄炒蛋</h1></div><span className="header-spark">✳</span></header>
     <nav className="stage-nav" aria-label="菜谱阶段">{stages.map(stage => <button key={stage.id} className={state.stage === stage.id ? 'active' : ''} onClick={() => selectStage(stage.id)} aria-current={state.stage === stage.id ? 'step' : undefined}><span>{stage.icon}</span>{stage.short}</button>)}</nav>
     {storageError && <p className="error-banner" role="alert">跟做进度未能保存到本机。请检查浏览器存储权限。</p>}
+    <div className="stage-body">
     {state.stage === 'ingredients' && <section className="ingredients-section"><div className="stage-kicker"><span>01 / 04</span><span>先摆好，再开火</span></div><h2 className="stage-title">食材和调料<span>✳</span></h2><p className="stage-lead">两人份。先核对总量，下方每一步会再告诉你这次要加多少。</p>
       <div className="ingredient-illustration"><AnimatedScene step={steps[0]}/></div>
       <div className="list-heading"><h3>主角食材</h3><span>FRESH & SIMPLE</span></div><div className="ingredient-list">{ingredients.filter(item => item.id === 'tomato' || item.id === 'egg').map(item => <div className="ingredient-row" key={item.id}><span className="ingredient-emoji">{item.emoji}</span><strong>{item.name}</strong><span>{item.display}</span></div>)}</div>
       <div className="list-heading"><h3>调味用量</h3><span>量勺约值并列</span></div><div className="ingredient-list">{ingredients.filter(item => item.id !== 'tomato' && item.id !== 'egg').map(item => <div className="ingredient-row" key={item.id}><span className="ingredient-emoji">{item.emoji}</span><strong>{item.name}{item.optional && <small>可选</small>}</strong><span>{item.display}</span></div>)}</div>
       <p className="ingredient-note">✎ 用量和时间为原型参考，正式作为烹饪指导前仍需试做校准。</p>
-      <button className="primary-button wide" onClick={() => { if (state.activeStepId === 1) dispatch({ type: 'complete', now: Date.now() }); else selectStage('prep') }}>食材备齐，开始备菜 <IconArrow/></button>
     </section>}
-    {state.stage !== 'ingredients' && (state.stage === 'cook' && view === 'demo' ? <Demo onFollow={() => { setView('follow'); dispatch({ type: 'return-active' }) }}/> : <>
+    {state.stage !== 'ingredients' && (cookerDemo ? <Demo onFollow={() => { setView('follow'); dispatch({ type: 'return-active' }) }}/> : <>
       {state.stage === 'cook' && <div className="view-switch"><button className="selected" onClick={() => setView('follow')}>跟着做</button><button onClick={() => setView('demo')}>▷ 完整演示</button></div>}
       <section className="follow-section"><div className="stage-kicker"><span>{stages.find(item => item.id === state.stage)?.icon} / 04</span><span>{stages.find(item => item.id === state.stage)?.note}</span></div>
         <div className="section-heading"><div><span className="eyebrow">{state.stage === 'prep' ? '把食材处理好' : state.stage === 'cook' ? '跟着动作慢慢来' : '热乎乎地完成啦'}</span><h2>{stages.find(item => item.id === state.stage)?.label}</h2></div>{state.stage === 'finished' && <span className="hand-note">好香！</span>}</div>
-        <div className="node-strip" role="group" aria-label="点击查看步骤">{stageSteps.map(item => <button key={item.id} className={`${item.id === step.id ? 'current' : ''} ${state.completedIds.includes(item.id) ? 'done' : ''}`} onClick={() => dispatch({ type: 'inspect', stepId: item.id })} aria-pressed={item.id === step.id}><span className="node-dot">{state.completedIds.includes(item.id) ? '✓' : String(item.id).padStart(2,'0')}</span><small>{item.title}</small></button>)}</div>
+        <div className="node-strip" role="group" aria-label="点击查看步骤">{stageSteps.map((item, index) => <Fragment key={item.id}>{index > 0 && <span className="node-sep" aria-hidden="true">›</span>}<button className={`${item.id === step.id ? 'current' : ''} ${state.completedIds.includes(item.id) ? 'done' : ''}`} onClick={() => dispatch({ type: 'inspect', stepId: item.id })} aria-pressed={item.id === step.id}><span className="node-dot">{state.completedIds.includes(item.id) ? '✓' : String(item.id).padStart(2,'0')}</span><small>{item.title}</small></button></Fragment>)}</div>
         {isInspecting && <div className="inspect-banner"><span>正在查看第 {step.id} 步，进度不变。</span><div><button onClick={() => dispatch({ type: 'return-active' })}>返回原步骤</button><button onClick={() => dispatch({ type: 'continue-from-inspected' })}>从这步继续</button></div></div>}
         <div className="step-heading"><span className="step-counter">STEP {String(step.id).padStart(2,'0')} / 08</span><h3>{step.title}</h3><p>{step.description}</p></div>
         <AnimatedScene key={step.id} step={step}/>
@@ -161,11 +167,19 @@ function RecipePage() {
         {((state.stage === 'prep' && step.id === 3) || (state.stage === 'cook' && !step.durationSeconds)) && <div className="timer-pref"><label><input type="checkbox" checked={state.autoTimer} onChange={event => dispatch({ type: 'auto-timer', enabled: event.target.checked })}/> 自动计时 {state.autoTimer ? '已开启' : '已关闭'}</label><small>进入需要计时的下一步时自动开始</small></div>}
         <div className="cue-card"><span className="cue-check">✓</span><div><strong>完成标志</strong><p>{step.cue}</p></div></div>
         <div className="next-preview">{step.preview}</div>
-        <button className="primary-button wide" onClick={() => dispatch(isInspecting ? { type: 'return-active' } : { type: 'complete', now: Date.now() })}>{isInspecting ? '返回当前跟做步骤' : step.id === 8 ? '完成这道菜 ✓' : '完成本步，下一步'} <IconArrow/></button>
         {state.stage === 'finished' && <PhotoSection/>}
       </section>
     </>)}
     <footer className="recipe-footer">小厨手账 <span>·</span> 好好做饭，好好吃饭。</footer>
+    </div>
+    {primaryAction && <div className="action-bar"><button className="primary-button wide" onClick={() => {
+      if (primaryAction.kind === 'prep') {
+        if (state.activeStepId === 1) dispatch({ type: 'complete', now: Date.now() })
+        else selectStage('prep')
+      } else {
+        dispatch(isInspecting ? { type: 'return-active' } : { type: 'complete', now: Date.now() })
+      }
+    }}>{primaryAction.label}</button></div>}
   </main>
 }
 

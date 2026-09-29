@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import type { RecipeStep } from './recipe'
 
-interface SceneProps { step: RecipeStep; compact?: boolean; playing?: boolean; keySeed?: number }
+interface SceneProps { step: RecipeStep; compact?: boolean; playing?: boolean; keySeed?: number; fit?: 'contain' | 'cover' }
 
 const tomato = (x: number, y: number, size = 1, key = '') => <g key={key} transform={`translate(${x} ${y}) scale(${size})`} className="scene-bob"><path d="M-24 0C-26-17-13-26 0-24c18-4 28 9 24 25-4 19-16 25-26 23C-17 27-25 17-24 0Z" fill="#df6950" stroke="#8d4634" strokeWidth="2.6"/><path d="M-10-21 0-27l10 6-10 4Z" fill="#527d49"/><path d="M-8-12q-7 7-7 18" fill="none" stroke="#f8c2a3" strokeWidth="3" strokeLinecap="round"/></g>
 const egg = (x: number, y: number, size = 1, key = '') => <g key={key} transform={`translate(${x} ${y}) scale(${size})`} className="scene-bob"><ellipse rx="32" ry="24" fill="#fff5dc" stroke="#aa8055" strokeWidth="2"/><circle cx="3" cy="0" r="13" fill="#edbc55" stroke="#d3993b" strokeWidth="2"/></g>
@@ -55,9 +55,9 @@ function SceneArt({ scene }: { scene: RecipeStep['scene'] }) {
   </>
 }
 
-export function Scene({ step, compact = false, playing = true, keySeed = 0 }: SceneProps) {
+export function Scene({ step, compact = false, playing = true, keySeed = 0, fit = 'contain' }: SceneProps) {
   return <div className={`scene-wrap ${playing ? '' : 'scene-paused'} ${compact ? 'scene-compact' : ''}`} aria-label={`${step.title}手绘示意`}>
-    <svg key={`${step.id}-${keySeed}`} className="scene-svg" viewBox="0 0 420 320" role="img" aria-label={`${step.title}：${step.description}`}>
+    <svg key={`${step.id}-${keySeed}`} className="scene-svg" viewBox="0 0 420 320" preserveAspectRatio={fit === 'cover' ? 'xMidYMid slice' : 'xMidYMid meet'} role="img" aria-label={`${step.title}：${step.description}`}>
       <defs><pattern id="paperDots" width="18" height="18" patternUnits="userSpaceOnUse"><circle cx="3" cy="6" r=".6" fill="#b99c72" opacity=".18" /></pattern></defs>
       <rect width="420" height="320" rx="25" fill="#f7efdc"/><rect width="420" height="320" rx="25" fill="url(#paperDots)"/>
       <path d="M19 252q48-17 66 10M344 244q42-11 60 6" fill="none" stroke="#94a77c" strokeWidth="2" strokeDasharray="4 7"/>
