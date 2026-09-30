@@ -1,8 +1,8 @@
 {
   "id": "mobile-one-screen",
   "name": "mobile-one-screen",
-  "title": "优化移动端一屏菜谱与食材演示",
-  "description": "压缩四阶段页面与步骤导航，成品记录可上下滑动，并评估替换现有手绘动效",
+  "title": "六屏静态菜谱原型复刻",
+  "description": "按六张手绘原型图复刻手机网页，一屏布局、静态插画、手动分镜与成品记录滚动",
   "status": "planning",
   "dev_type": null,
   "scope": null,
