@@ -1,71 +1,66 @@
 import { Fragment, useEffect, useReducer, useRef, useState } from 'react'
 import { Link, Navigate, Route, Routes, useNavigate } from 'react-router-dom'
-import { AnimatedScene, Scene } from './Scene'
+import { Scene } from './Scene'
 import { deletePhoto, getPhoto, savePhoto } from './photo'
 import { ingredientById, ingredients, stages, steps, type Stage, type StepMaterial } from './recipe'
 import { loadProgress, progressReducer, remainingSeconds, saveProgress } from './progress'
+import ingredientsArt from './assets/ingredients-watercolor.webp'
+import cuttingArt from './assets/cut-tomato-watercolor.webp'
+import whiskArt from './assets/whisk-eggs-watercolor.webp'
+import combinedArt from './assets/combine-pan-watercolor.webp'
+import finishedArt from './assets/tomato-egg-hero.webp'
+import './styles.css'
 
-const demoOrder = [2, 3, 4, 5, 6, 7, 8]
-const demoSegmentSeconds = 5
+const demoIds = [2, 3, 4, 5, 6, 7, 8]
+const routeArt = [ingredientsArt, cuttingArt, combinedArt, finishedArt]
 
-function fmtClock(seconds: number): string {
+function clock(seconds: number): string {
   return `${String(Math.floor(seconds / 60)).padStart(2, '0')}:${String(seconds % 60).padStart(2, '0')}`
 }
 
-function IconArrow({ left = false }: { left?: boolean }) { return <span aria-hidden="true">{left ? '←' : '→'}</span> }
-
 function MaterialGroup({ label, items }: { label: string; items: StepMaterial[] }) {
   if (!items.length) return null
-  return <div className="material-group"><h5>{label}</h5>{items.map(item => <div className="addition-row" key={item.id}><span>{ingredientById[item.id].emoji} {ingredientById[item.id].name}</span><strong>{item.display}</strong></div>)}</div>
+  return <div className="material-group">
+    <span className="material-label">{label}</span>
+    {items.map(item => <div className="material-row" key={item.id}>
+      <span>{ingredientById[item.id].name}</span><strong>{item.display}</strong>
+    </div>)}
+  </div>
 }
-
-function Brand() { return <div className="brand"><span className="brand-mark">✳</span><span>小厨手账</span></div> }
 
 function Home() {
   return <main className="page home-page">
-    <div className="page-scroll">
-    <header className="home-header"><Brand/><span className="header-note">把每一步，都做得心里有数</span></header>
-    <section className="home-intro"><div className="eyebrow">今日手绘菜谱 · 01 / 01</div><h1>番茄炒蛋<span className="title-star">✳</span></h1><p>先看清全程，再安心下锅。<br/>每一步都有动作、用量与火候提醒。</p></section>
-    <div className="hero-art"><Scene step={steps[7]} compact fit="cover"/><div className="hero-badge">酸甜软嫩<br/><b>两人份</b></div></div>
-    <section className="home-meta" aria-label="菜谱信息"><span><b>02</b><small>人份</small></span><span><b>约 15</b><small>分钟 · 参考</small></span><span><b>08</b><small>个步骤</small></span></section>
-    <section className="home-route"><div className="section-heading"><div><span className="eyebrow">THE LITTLE ROUTE</span><h2>从准备到开饭</h2></div><span className="hand-note">一眼看全程 ↘</span></div><div className="route-grid">{stages.map(stage => <div className="route-item" key={stage.id}><span className="route-number">{stage.icon}</span><div><strong>{stage.label}</strong><small>{stage.note}</small></div></div>)}</div></section>
-    <Link className="primary-button home-cta" to="/recipe">打开这道菜 <IconArrow/></Link>
-    <p className="footnote">用量与时间为原型参考，正式使用前仍需试做校准。</p>
+    <div className="home-layout">
+      <header className="home-header"><span className="tiny-tomato" aria-hidden="true">●</span><h1>今天做什么</h1><span className="leaf-mark" aria-hidden="true">❧</span></header>
+      <div className="home-hero">
+        <span className="home-aside left">简单<br/>好吃<br/>又下饭！</span>
+        <Scene step={steps[7]} compact/>
+        <span className="home-aside right">家常味<br/>从这一道开始</span>
+      </div>
+      <section className="home-identity"><h2>番茄炒蛋</h2><div className="brush-line" aria-hidden="true"/><p><span>♧ &nbsp;2 人份</span><i aria-hidden="true"/><span>◷ &nbsp;约 15 分钟</span></p></section>
+      <nav className="home-route" aria-label="做菜流程">{stages.map((stage, index) => <Fragment key={stage.id}><div className="route-item"><span className="route-image"><img src={routeArt[index]} alt=""/></span><strong>{stage.label}</strong></div>{index < stages.length - 1 && <span className="route-arrow" aria-hidden="true">→</span>}</Fragment>)}</nav>
+      <Link className="primary-button home-cta" to="/recipe">查看菜谱 <span aria-hidden="true">→</span></Link>
+      <p className="calibration-note">用量与时间是参考值，正式指导前仍需试做校准。</p>
     </div>
   </main>
 }
 
-function Demo({ onFollow }: { onFollow: () => void }) {
-  const [elapsed, setElapsed] = useState(0)
-  const [playing, setPlaying] = useState(false)
-  const [seen, setSeen] = useState(false)
-  const tickRef = useRef<number>(0)
-  const length = demoOrder.length * demoSegmentSeconds
-  useEffect(() => {
-    if (!playing) return
-    tickRef.current = Date.now()
-    const interval = window.setInterval(() => {
-      const now = Date.now()
-      const delta = (now - tickRef.current) / 1000
-      tickRef.current = now
-      setElapsed(previous => {
-        const next = Math.min(length, previous + delta)
-        if (next >= length) { setPlaying(false); setSeen(true) }
-        return next
-      })
-    }, 100)
-    return () => window.clearInterval(interval)
-  }, [playing, length])
-  const index = Math.min(demoOrder.length - 1, Math.floor(elapsed / demoSegmentSeconds))
-  const step = steps[demoOrder[index] - 1]
+function ManualStoryboard({ onFollow }: { onFollow: () => void }) {
+  const [index, setIndex] = useState(3)
+  const step = steps[demoIds[index] - 1]
   return <section className="demo-section">
-    <div className="section-heading"><div><span className="eyebrow">先看一遍 · 再跟着做</span><h2>完整演示</h2></div><span className="sketch-ring">约 35 秒</span></div>
-    <p className="muted">这是一段浓缩分镜，帮助你纵观备菜、下锅到装盘的顺序。观看不会启动做菜计时。</p>
-    <div className="demo-scene"><Scene step={step} playing={playing}/><div className="demo-caption"><span>{String(step.id).padStart(2, '0')} / 08</span><strong>{step.title}</strong><span>{step.verb}</span></div></div>
-    <div className="demo-progress" aria-label={`演示进度 ${Math.round(elapsed / length * 100)}%`}><span style={{ width: `${elapsed / length * 100}%` }}/></div>
-    <div className="demo-meta"><span>{fmtClock(Math.ceil(elapsed))} / {fmtClock(length)}</span><span>{index + 1} / {demoOrder.length} 个动作</span></div>
-    <div className="demo-buttons"><button className="primary-button" onClick={() => { if (elapsed >= length) setElapsed(0); setPlaying(value => !value) }}>{playing ? 'Ⅱ 暂停演示' : elapsed >= length ? '↻ 重看演示' : elapsed > 0 ? '▷ 继续演示' : '▷ 播放完整演示'}</button><button className="text-button" onClick={onFollow}>{seen ? '开始跟着做' : '跳过，直接跟做'} <IconArrow/></button></div>
-    <div className="demo-mini-steps">{demoOrder.map((id, i) => <button key={id} className={i === index ? 'selected' : ''} onClick={() => { setElapsed(i * demoSegmentSeconds); setPlaying(false) }} aria-label={`查看演示第 ${i + 1} 段：${steps[id - 1].title}`}>{id}</button>)}</div>
+    <header className="demo-header"><h2>完整演示</h2><p>先看一遍，再动手做</p></header>
+    <div className="storyboard">
+      <div className="storyboard-label"><span>{String(step.id).padStart(2, '0')} / 08</span><strong>{step.title}</strong></div>
+      <Scene step={step}/>
+      <span className="storyboard-note">{step.verb} ↗</span>
+    </div>
+    <div className="storyboard-rail" role="group" aria-label="手动查看完整演示分镜">
+      {demoIds.map((id, n) => <button key={id} type="button" className={n === index ? 'active' : ''} aria-pressed={n === index} aria-label={`第 ${n + 1} 段：${steps[id - 1].title}`} onClick={() => setIndex(n)}><span/>{steps[id - 1].title}</button>)}
+    </div>
+    <div className="storyboard-controls"><button type="button" disabled={index === 0} onClick={() => setIndex(value => value - 1)}>← 上一段</button><span>手动分镜 · {index + 1} / {demoIds.length}</span><button type="button" disabled={index === demoIds.length - 1} onClick={() => setIndex(value => value + 1)}>下一段 →</button></div>
+    <p className="demo-hint">这是静态分镜预览。查看分镜不会改变跟做进度或启动倒计时。</p>
+    <button className="text-button" type="button" onClick={onFollow}>返回当前跟做步骤 →</button>
   </section>
 }
 
@@ -103,14 +98,18 @@ function PhotoSection() {
     } catch { setMessage('删除失败，请稍后重试。') }
     finally { setBusy(false) }
   }
-  return <section className="photo-section"><div className="section-heading"><div><span className="eyebrow">我的料理记录</span><h2>留下今天这一盘</h2></div><span className="hand-note">拍一张吧 ↘</span></div>
-    <div className="photo-frame">{photoUrl ? <img src={photoUrl} alt="你保存的番茄炒蛋成品照片"/> : <div className="empty-photo"><span>✧</span><strong>你的作品，等一张照片</strong><small>拍照只是记录，不影响完成菜谱</small></div>}</div>
-    <div className="photo-actions"><button disabled={busy} onClick={() => cameraInput.current?.click()}>◉ {photoUrl ? '重新拍照' : '拍照'}</button><button disabled={busy} onClick={() => libraryInput.current?.click()}>▧ {photoUrl ? '更换照片' : '从相册选择'}</button></div>
+  return <section className="photo-section" aria-label="我的料理记录">
+    <div className="photo-heading"><strong>我的料理记录</strong><span>拍一张吧 ↘</span></div>
+    <div className="photo-frame">
+      {photoUrl ? <img src={photoUrl} alt="你保存的番茄炒蛋成品照片"/> : <div className="empty-photo"><span aria-hidden="true">▣</span><strong>记录我的成品</strong></div>}
+      <div className="photo-actions"><button disabled={busy} onClick={() => cameraInput.current?.click()}>◎ {photoUrl ? '重新拍照' : '拍照'}</button><button disabled={busy} onClick={() => libraryInput.current?.click()}>▧ {photoUrl ? '更换照片' : '从相册选择'}</button></div>
+      <small>♙ 照片只保存在本机</small>
+    </div>
     {photoUrl && <button className="delete-link" disabled={busy} onClick={remove}>删除本机照片</button>}
     <input ref={cameraInput} type="file" accept="image/*" capture="environment" hidden onChange={event => { void handleFile(event.target.files?.[0]); event.target.value = '' }}/>
     <input ref={libraryInput} type="file" accept="image/*" hidden onChange={event => { void handleFile(event.target.files?.[0]); event.target.value = '' }}/>
     {message && <p className="status-message" role="status">{message}</p>}
-    <p className="privacy-note">照片只保存在当前设备的浏览器，不会上传。清除浏览器数据可能删除照片与跟做进度。</p>
+    <p className="privacy-note">清除浏览器数据可能删除照片与跟做进度；照片不会上传。</p>
   </section>
 }
 
@@ -123,63 +122,75 @@ function RecipePage() {
   useEffect(() => { setStorageError(!saveProgress(state)) }, [state])
   useEffect(() => {
     const update = () => setNow(Date.now())
+    update()
     const interval = window.setInterval(update, 500)
     document.addEventListener('visibilitychange', update)
     window.addEventListener('focus', update)
     return () => { window.clearInterval(interval); document.removeEventListener('visibilitychange', update); window.removeEventListener('focus', update) }
   }, [])
+
   const step = steps[state.inspectedStepId - 1]
   const stageSteps = steps.filter(item => item.stage === state.stage)
+  const inspecting = state.inspectedStepId !== state.activeStepId
   const timerLoading = state.timer?.stepId === step.id && now === 0
   const remaining = state.timer?.stepId === step.id && now ? remainingSeconds(state.timer, now) : null
-  const isInspecting = state.inspectedStepId !== state.activeStepId
+  const isDemo = state.stage === 'cook' && view === 'demo'
+
   function selectStage(stage: Stage) {
     dispatch({ type: 'stage', stage })
     const target = steps.find(item => item.id === state.activeStepId && item.stage === stage) ?? steps.find(item => item.stage === stage)
     if (target) dispatch({ type: 'inspect', stepId: target.id })
   }
-  const cookerDemo = state.stage === 'cook' && view === 'demo'
-  const primaryAction = cookerDemo ? null : state.stage === 'ingredients'
-    ? { kind: 'prep' as const, label: <>食材备齐，开始备菜 <IconArrow/></> }
-    : { kind: 'advance' as const, label: isInspecting ? '返回当前跟做步骤' : step.id === 8 ? '完成这道菜 ✓' : <>完成本步，下一步 <IconArrow/></> }
+
+  function advance() {
+    if (isDemo) { setView('follow'); dispatch({ type: 'return-active' }); return }
+    if (state.stage === 'ingredients') {
+      if (state.activeStepId === 1) dispatch({ type: 'complete', now: Date.now() })
+      else selectStage('prep')
+      return
+    }
+    dispatch(inspecting ? { type: 'return-active' } : { type: 'complete', now: Date.now() })
+  }
+
+  const actionLabel = isDemo ? '开始跟做' : state.stage === 'ingredients' ? '开始备菜' : inspecting ? '返回跟做步骤' : step.id === 8 ? '完成这道菜' : '完成本步，下一步'
+
   return <main className="page recipe-page">
-    <header className="recipe-header"><button className="back-button" onClick={() => navigate('/')} aria-label="返回首页"><IconArrow left/></button><div><small>小厨手账 / 两人份</small><h1>番茄炒蛋</h1></div><span className="header-spark">✳</span></header>
-    <nav className="stage-nav" aria-label="菜谱阶段">{stages.map(stage => <button key={stage.id} className={state.stage === stage.id ? 'active' : ''} onClick={() => selectStage(stage.id)} aria-current={state.stage === stage.id ? 'step' : undefined}><span>{stage.icon}</span>{stage.short}</button>)}</nav>
-    {storageError && <p className="error-banner" role="alert">跟做进度未能保存到本机。请检查浏览器存储权限。</p>}
-    <div className="stage-body">
-    {state.stage === 'ingredients' && <section className="ingredients-section"><div className="stage-kicker"><span>01 / 04</span><span>先摆好，再开火</span></div><h2 className="stage-title">食材和调料<span>✳</span></h2><p className="stage-lead">两人份。先核对总量，下方每一步会再告诉你这次要加多少。</p>
-      <div className="ingredient-illustration"><AnimatedScene step={steps[0]}/></div>
-      <div className="list-heading"><h3>主角食材</h3><span>FRESH & SIMPLE</span></div><div className="ingredient-list">{ingredients.filter(item => item.id === 'tomato' || item.id === 'egg').map(item => <div className="ingredient-row" key={item.id}><span className="ingredient-emoji">{item.emoji}</span><strong>{item.name}</strong><span>{item.display}</span></div>)}</div>
-      <div className="list-heading"><h3>调味用量</h3><span>量勺约值并列</span></div><div className="ingredient-list">{ingredients.filter(item => item.id !== 'tomato' && item.id !== 'egg').map(item => <div className="ingredient-row" key={item.id}><span className="ingredient-emoji">{item.emoji}</span><strong>{item.name}{item.optional && <small>可选</small>}</strong><span>{item.display}</span></div>)}</div>
-      <p className="ingredient-note">✎ 用量和时间为原型参考，正式作为烹饪指导前仍需试做校准。</p>
-    </section>}
-    {state.stage !== 'ingredients' && (cookerDemo ? <Demo onFollow={() => { setView('follow'); dispatch({ type: 'return-active' }) }}/> : <>
-      {state.stage === 'cook' && <div className="view-switch"><button className="selected" onClick={() => setView('follow')}>跟着做</button><button onClick={() => setView('demo')}>▷ 完整演示</button></div>}
-      <section className="follow-section"><div className="stage-kicker"><span>{stages.find(item => item.id === state.stage)?.icon} / 04</span><span>{stages.find(item => item.id === state.stage)?.note}</span></div>
-        <div className="section-heading"><div><span className="eyebrow">{state.stage === 'prep' ? '把食材处理好' : state.stage === 'cook' ? '跟着动作慢慢来' : '热乎乎地完成啦'}</span><h2>{stages.find(item => item.id === state.stage)?.label}</h2></div>{state.stage === 'finished' && <span className="hand-note">好香！</span>}</div>
-        <div className="node-strip" role="group" aria-label="点击查看步骤">{stageSteps.map((item, index) => <Fragment key={item.id}>{index > 0 && <span className="node-sep" aria-hidden="true">›</span>}<button className={`${item.id === step.id ? 'current' : ''} ${state.completedIds.includes(item.id) ? 'done' : ''}`} onClick={() => dispatch({ type: 'inspect', stepId: item.id })} aria-pressed={item.id === step.id}><span className="node-dot">{state.completedIds.includes(item.id) ? '✓' : String(item.id).padStart(2,'0')}</span><small>{item.title}</small></button></Fragment>)}</div>
-        {isInspecting && <div className="inspect-banner"><span>正在查看第 {step.id} 步，进度不变。</span><div><button onClick={() => dispatch({ type: 'return-active' })}>返回原步骤</button><button onClick={() => dispatch({ type: 'continue-from-inspected' })}>从这步继续</button></div></div>}
-        <div className="step-heading"><span className="step-counter">STEP {String(step.id).padStart(2,'0')} / 08</span><h3>{step.title}</h3><p>{step.description}</p></div>
-        <AnimatedScene key={step.id} step={step}/>
-        <div className="step-facts"><div><span>🔥 火候</span><strong>{step.heat}</strong></div><div><span>◷ 参考时长</span><strong>{step.durationSeconds ? fmtClock(step.durationSeconds) : '按状态判断'}</strong></div><div><span>⌁ 工具</span><strong>{step.tool}</strong></div></div>
-        <div className="detail-card"><h4>这一步的食材 <span>· 本次数量</span></h4><MaterialGroup label="本步处理" items={step.handled ?? []}/><MaterialGroup label="本步加入" items={step.additions}/><MaterialGroup label="回锅使用 · 已计入前一步" items={step.reused ?? []}/>{!step.handled?.length && !step.additions.length && !step.reused?.length && <p className="muted">这一步不再加入食材或调料。</p>}</div>
-        {step.durationSeconds && <div className="timer-card"><div className="timer-heading"><div><span className="eyebrow">做菜倒计时</span><h4>{timerLoading ? '··:··' : remaining === null ? fmtClock(step.durationSeconds) : fmtClock(remaining)}</h4><small>{timerLoading ? '正在恢复计时…' : remaining === 0 ? '时间到了，请检查食材状态' : remaining === null ? '下锅后再开始计时' : '计时中 · 状态比时间更重要'}</small></div><label className="toggle-label">自动计时<input type="checkbox" checked={state.autoTimer} onChange={event => dispatch({ type: 'auto-timer', enabled: event.target.checked })}/><span className="switch"/><small>{state.autoTimer ? '已开启' : '已关闭'}</small></label></div><div className="timer-actions">{remaining === null || remaining === 0 ? <button disabled={isInspecting || timerLoading} onClick={() => dispatch({ type: 'start-timer', now: Date.now() })}>{remaining === 0 ? '↻ 重新计时' : '▷ 开始计时'}</button> : <button onClick={() => dispatch({ type: 'reset-timer' })}>停止计时</button>}{remaining === 0 && <button onClick={() => dispatch({ type: 'reset-timer' })}>清除提醒</button>}<span>离开页面后仍按真实时间计算；无后台提醒</span></div></div>}
-        {((state.stage === 'prep' && step.id === 3) || (state.stage === 'cook' && !step.durationSeconds)) && <div className="timer-pref"><label><input type="checkbox" checked={state.autoTimer} onChange={event => dispatch({ type: 'auto-timer', enabled: event.target.checked })}/> 自动计时 {state.autoTimer ? '已开启' : '已关闭'}</label><small>进入需要计时的下一步时自动开始</small></div>}
-        <div className="cue-card"><span className="cue-check">✓</span><div><strong>完成标志</strong><p>{step.cue}</p></div></div>
-        <div className="next-preview">{step.preview}</div>
-        {state.stage === 'finished' && <PhotoSection/>}
-      </section>
-    </>)}
-    <footer className="recipe-footer">小厨手账 <span>·</span> 好好做饭，好好吃饭。</footer>
+    <header className="recipe-header"><button className="back-button" onClick={() => navigate('/')} aria-label="返回首页">←</button><h1>番茄炒蛋</h1><span className="header-sprig" aria-hidden="true">❧</span></header>
+    <nav className="stage-nav" aria-label="菜谱阶段">{stages.map(stage => <button key={stage.id} className={state.stage === stage.id ? 'active' : ''} onClick={() => selectStage(stage.id)} aria-current={state.stage === stage.id ? 'step' : undefined}>{stage.short}</button>)}</nav>
+    {storageError && <p className="error-banner" role="alert">跟做进度未能保存到本机，请检查浏览器存储权限。</p>}
+    <div className={`stage-body stage-${state.stage}${isDemo ? ' stage-demo' : ''}`}>
+      {state.stage === 'ingredients' && <section className="ingredients-section">
+        <header className="content-heading"><h2>食材和调料</h2><p>两人份 · 下锅前备齐</p><span className="scribble">新鲜的食材<br/>是好味道的开始 ↘</span></header>
+        <div className="ingredient-illustration"><Scene step={steps[0]} compact/></div>
+        <div className="ingredients-scroll" tabIndex={0} aria-label="食材和调料清单，可上下滚动">
+          <h3 className="brush-subtitle">食材</h3>
+          {ingredients.filter(item => item.id === 'tomato' || item.id === 'egg').map(item => <div className="ingredient-row" key={item.id}><span className="ingredient-emoji" aria-hidden="true">{item.emoji}</span><strong>{item.name}</strong><span>{item.display}</span><span className="ingredient-check" aria-hidden="true">✓</span></div>)}
+          <h3 className="brush-subtitle seasoning-title">调料</h3>
+          {ingredients.filter(item => item.id !== 'tomato' && item.id !== 'egg').map(item => <div className="ingredient-row" key={item.id}><span className="ingredient-emoji" aria-hidden="true">{item.emoji}</span><strong>{item.name}</strong><span>{item.display}{item.optional && <small>可选</small>}</span></div>)}
+          <p className="calibration-note">用量和时间为参考样例，实际使用前须试做校准。</p>
+        </div>
+      </section>}
+
+      {isDemo && <ManualStoryboard onFollow={() => { setView('follow'); dispatch({ type: 'return-active' }) }}/ >}
+
+      {!isDemo && state.stage !== 'ingredients' && <section className={`follow-section follow-${state.stage}`}>
+        {state.stage === 'prep' && <header className="phase-heading"><h2>备菜</h2><p>下锅前，先把动作做完</p></header>}
+        {state.stage === 'finished' && <header className="phase-heading finished-heading"><h2>完成啦！</h2><p>看看你的第一盘番茄炒蛋</p></header>}
+        {state.stage !== 'finished' && <div className={`node-strip nodes-${state.stage}`} role="group" aria-label="点击查看步骤">{stageSteps.map((item, index) => <Fragment key={item.id}>{index > 0 && <span className="node-sep" aria-hidden="true">{state.stage === 'prep' ? '›' : ''}</span>}<button className={`${item.id === step.id ? 'current' : ''} ${state.completedIds.includes(item.id) ? 'done' : ''}`} onClick={() => dispatch({ type: 'inspect', stepId: item.id })} aria-pressed={item.id === step.id}><span className="node-dot">{state.completedIds.includes(item.id) ? '✓' : String(item.id).padStart(2,'0')}</span><span className="node-label">{item.title}</span></button></Fragment>)}</div>}
+        {state.stage === 'cook' && <div className="cook-title"><div><h2>{step.title}</h2><p>{step.description}</p></div><button type="button" onClick={() => setView('demo')}>▷ 完整演示</button></div>}
+        {inspecting && <div className="inspect-banner"><span>仅查看第 {step.id} 步，进度未改变。</span><button onClick={() => dispatch({ type: 'return-active' })}>返回原步骤</button><button onClick={() => dispatch({ type: 'continue-from-inspected' })}>从这步继续</button></div>}
+        <div className="step-illustration"><Scene step={step}/>{state.stage === 'prep' && <span className="scene-note">{step.id === 2 ? '先切瓣，再切小块 ↘' : '搅拌到颜色均匀 ↘'}</span>}</div>
+        {state.stage === 'prep' && <div className="prep-detail"><h3 className="brush-subtitle">{step.id === 2 ? '番茄切成小块' : '鸡蛋打散搅匀'}</h3><p>{step.description}</p><div className="cue-card"><span>✓</span><strong>{step.cue}</strong></div>{step.id === 2 ? <button className="prep-next-card" type="button" onClick={() => dispatch({ type: 'inspect', stepId: 3 })}><img src={whiskArt} alt=""/><span><small>下一步</small><strong>打散鸡蛋</strong><em>点击查看 →</em></span></button> : <div className="next-preview">{step.preview} ›</div>}{step.id === 3 && <div className="timer-pref"><label><input type="checkbox" checked={state.autoTimer} onChange={event => dispatch({ type: 'auto-timer', enabled: event.target.checked })}/> 自动计时 {state.autoTimer ? '已开启' : '已关闭'}</label><small>下一步进入热锅时自动开始</small></div>}</div>}
+        {state.stage === 'cook' && <div className="cook-detail-scroll" tabIndex={0} aria-label="本步用量、倒计时和完成标志，可上下滚动">
+          <div className="cook-facts"><div><span aria-hidden="true">♨</span><small>火候</small><strong>{step.heat}</strong></div><div><span aria-hidden="true">◈</span><small>本次用量</small><strong>{step.additions[0]?.display ?? step.reused?.[0]?.display ?? '见下方'}</strong></div><div><span aria-hidden="true">◷</span><small>参考</small><strong>{step.durationSeconds ? clock(step.durationSeconds) : '按状态'}</strong></div></div>
+          {(step.handled?.length || step.additions.length || step.reused?.length) ? <div className="materials-detail"><MaterialGroup label="本步处理" items={step.handled ?? []}/><MaterialGroup label="本步加入" items={step.additions}/><MaterialGroup label="回锅使用 · 已计入前一步" items={step.reused ?? []}/></div> : null}
+          {step.durationSeconds && <div className="timer-card"><div className="timer-main"><div><strong className="timer-clock">{timerLoading ? '··:··' : remaining === null ? clock(step.durationSeconds) : clock(remaining)}</strong><small>{timerLoading ? '正在恢复计时…' : remaining === 0 ? '时间到了，请检查食材状态' : remaining === null ? '下锅后再开始计时' : '计时中 · 请留意食材状态'}</small></div><label className="toggle-label">自动计时<input type="checkbox" checked={state.autoTimer} onChange={event => dispatch({ type: 'auto-timer', enabled: event.target.checked })}/><span className="switch"/><small>{state.autoTimer ? '已开启' : '已关闭'}</small></label></div><div className="timer-actions">{remaining === null || remaining === 0 ? <button disabled={inspecting || timerLoading} onClick={() => dispatch({ type: 'start-timer', now: Date.now() })}>{remaining === 0 ? '重新计时' : '开始计时'}</button> : <button onClick={() => dispatch({ type: 'reset-timer' })}>停止计时</button>}{remaining === 0 && <button onClick={() => dispatch({ type: 'reset-timer' })}>清除提醒</button>}<small>离开网页后按真实时间继续，无后台提醒</small></div></div>}
+          <div className="cue-card"><span>✓</span><strong>{step.cue}</strong></div><div className="next-preview">{step.preview}</div>
+        </div>}
+        {state.stage === 'finished' && <><div className="finished-reference"><span className="scribble">简单的食材<br/>也能做出幸福味道！</span><div className="cue-card"><span>✓</span><div><strong>参考成品</strong><p>鸡蛋柔软，番茄出汁，颜色鲜亮。</p></div></div></div><PhotoSection/></>}
+      </section>}
     </div>
-    {primaryAction && <div className="action-bar"><button className="primary-button wide" onClick={() => {
-      if (primaryAction.kind === 'prep') {
-        if (state.activeStepId === 1) dispatch({ type: 'complete', now: Date.now() })
-        else selectStage('prep')
-      } else {
-        dispatch(isInspecting ? { type: 'return-active' } : { type: 'complete', now: Date.now() })
-      }
-    }}>{primaryAction.label}</button></div>}
+    <div className="action-bar"><button className="primary-button" onClick={advance}>{actionLabel} <span aria-hidden="true">→</span></button></div>
   </main>
 }
 

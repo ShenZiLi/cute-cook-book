@@ -18,6 +18,7 @@ This directory contains guidelines for frontend development. Fill in each file w
 | [Component Guidelines](./component-guidelines.md) | Component patterns, props, composition | To fill |
 | [Hook Guidelines](./hook-guidelines.md) | Custom hooks, data fetching patterns | To fill |
 | [State Management](./state-management.md) | Progress, timer, quantity and photo contracts | Active |
+| [Mobile Presentation](./mobile-presentation.md) | Static artwork, storyboard and viewport containment | Active |
 | [Quality Guidelines](./quality-guidelines.md) | Code standards, forbidden patterns | To fill |
 | [Type Safety](./type-safety.md) | Type patterns, validation | To fill |
 
@@ -26,6 +27,7 @@ This directory contains guidelines for frontend development. Fill in each file w
 ## Pre-Development Checklist
 
 - For work touching recipe quantities, navigation, timers, or local photos, read [State Management](./state-management.md) before editing.
+- For recipe screen layout or illustration work, read [Mobile Presentation](./mobile-presentation.md).
 - Follow the relevant requirement and design artifacts in the active Trellis task.
 
 ## Quality Check
