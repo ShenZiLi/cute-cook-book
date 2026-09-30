@@ -8,8 +8,8 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 1
-- **Last Active**: 2026-09-29
+- **Total Sessions**: 2
+- **Last Active**: 2026-09-30
 <!-- @@@/auto:current-status -->
 
 ---
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~36 | Active |
+| `journal-1.md` | ~58 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 2 | 2026-09-30 | 六屏静态手绘菜谱界面 | `4c7c702` | `dev` |
 | 1 | 2026-09-29 | 番茄炒蛋手绘动画菜谱网页首版 | - | `-` |
 <!-- @@@/auto:session-history -->
 

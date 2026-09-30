@@ -34,3 +34,25 @@
 ### Status
 
 [OK] **Completed**
+
+
+## Session 2: 六屏静态手绘菜谱界面
+<!-- trellis-session: v=2 fp=41bdc7219d976b1d -->
+
+**Date**: 2026-09-30
+**Task**: 六屏静态手绘菜谱界面
+**Branch**: `dev`
+
+### Summary
+
+Recreated six mobile recipe views with static watercolor assets and manual storyboard navigation; preserved local timer and photo contracts. Lint, typecheck, build, six tests and diff check passed. Browser checked mobile containment and local photo save/reload/delete. Added mobile presentation spec.
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `4c7c702` | feat: recreate recipe screens with static watercolor artwork |
+
+### Status
+
+[OK] **Completed**
